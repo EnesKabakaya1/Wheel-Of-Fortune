@@ -10,6 +10,156 @@ const loadScript = (url) => new Promise((resolve, reject) => {
     document.head.appendChild(script);
 });
 
+const createLoadingScreen = () => {
+    ((self) => {
+        'use strict';
+
+        const classes = {
+            laodingScreenContainer: 'wof-loading-screen-container',
+            loadingScreenContent: 'wof-loading-screen-content',
+            loadingScreenText: 'wof-loading-screen-text',
+            loadingStyle: 'wof-loading-style',
+        };
+
+        const selectors = Object.keys(classes).reduce((createdSelector, key) => (
+            createdSelector[key] = `.${ classes[key] }`, createdSelector
+        ), {});
+
+        self.init = () => {
+            self.buildCSS();
+            self.buildHTML();
+        };
+
+        self.reset = () => {
+            const loadingScreenContainer = document.querySelector(selectors.loadingScreenContainer);
+            const loadingStyle = document.querySelector(selectors.loadingStyle);
+
+            loadingScreenContainer.remove();
+            loadingStyle.remove();
+        };
+
+        self.buildCSS = () => {
+            const { laodingScreenContainer, loadingScreenContent, loadingScreenText } = selectors;
+
+            const style =
+            `${ laodingScreenContainer } {
+                position: fixed;
+                width: 100%;
+                height: 100%;
+                left: 0;
+                top: 0;
+                background-color: #363A5D;
+            }
+            ${ loadingScreenText } {
+                display: block;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                color: #999;
+                width: 100px;
+                height: 30px;
+                margin: -7px 0 0 -45px;
+                text-align: center;
+                font-family: 'PT Sans Narrow', sans-serif;
+                font-size: 20px;
+                text-transform: capitalize;
+            }
+            ${ loadingScreenContent } {
+                display: block;
+                position: relative;
+                left: 50%;
+                top: 50%;
+                width: 170px;
+                height: 170px;
+                margin: -85px 0 0 -85px;
+                border: 3px solid #F00;
+            }
+            ${ loadingScreenContent }:after {
+                content: "";
+                position: absolute;
+                border: 3px solid #0F0;
+                left: 15px;
+                right: 15px;
+                top: 15px;
+                bottom: 15px;
+            }
+            ${ loadingScreenContent }:before {
+                content: "";
+                position: absolute;
+                border: 3px solid #00F;
+                left: 5px;
+                right: 5px;
+                top: 5px;
+                bottom: 5px;
+            }
+            ${ loadingScreenContent } {
+                border: 3px solid transparent;
+                border-top-color: #4D658D;
+                border-bottom-color: #4D658D;
+                border-radius: 50%;
+                -webkit-animation: loader 2s linear infinite;
+                -moz-animation: loader 2s linear infinite;
+                -o-animation: loader 2s linear infinite;
+                animation: loader 2s linear infinite;
+            }
+            ${ loadingScreenContent }:before {
+                border: 3px solid transparent;
+                border-top-color: #D4CC6A;
+                border-bottom-color: #D4CC6A;
+                border-radius: 50%;
+                -webkit-animation: loader 3s linear infinite;
+                -moz-animation: loader 2s linear infinite;
+                -o-animation: loader 2s linear infinite;
+                animation: loader 3s linear infinite;
+            }
+            ${ loadingScreenContent }:after {
+                border: 3px solid transparent;
+                border-top-color: #84417C;
+                border-bottom-color: #84417C;
+                border-radius: 50%;
+                -webkit-animation: loader 1.5s linear infinite;
+                animation: loader 1.5s linear infinite;
+                -moz-animation: loader 2s linear infinite;
+                -o-animation: loader 2s linear infinite;
+            }
+            @keyframes loader {
+                0% {
+                    -webkit-transform: rotate(0deg);
+                    -ms-transform: rotate(0deg);
+                    transform: rotate(0deg);
+                }
+                100% {
+                    -webkit-transform: rotate(360deg);
+                    -ms-transform: rotate(360deg);
+                    transform: rotate(360deg);
+                }
+            }`;
+
+            const styleElement = document.createElement('style');
+
+            styleElement.classList.add(classes.loadingStyle);
+            styleElement.innerHTML = style;
+            document.head.appendChild(styleElement);
+        };
+
+        self.buildHTML = () => {
+            const { laodingScreenContainer, loadingScreenContent, loadingScreenText } = classes;
+
+            const loadingScreenHtml =
+            `<div class="${ laodingScreenContainer }">
+                <div class="${ loadingScreenText }">loading</div>
+                <div class="${ loadingScreenContent }"></div>
+            </div>`;
+
+            document.body.insertAdjacentHTML('beforeend', loadingScreenHtml);
+        };
+
+        self.init();
+    })({});
+};
+
+createLoadingScreen();
+
 const scriptSource = [
     { name: 'jQuery', url: 'https://code.jquery.com/jquery-3.3.1.min.js' },
 ];
@@ -204,6 +354,9 @@ Promise.all(scriptSource.map((scriptUrl) => loadScript(scriptUrl.url))).then(() 
                 copyRight: 'wof-copy-right',
                 inputError: 'wof-input-error',
                 winnerHeader: 'wof-winner-header',
+                laodingScreenContainer: 'wof-loading-screen-container',
+                loadingScreenText: 'wof-loading-screen-text',
+                loadingScreenContent: 'wof-loading-screen-content',
             };
 
             const selectors = Object.keys(classes).reduce((createdSelector, key) => (
@@ -216,6 +369,16 @@ Promise.all(scriptSource.map((scriptUrl) => loadScript(scriptUrl.url))).then(() 
                 self.buildHTML();
                 self.setEvents();
                 self.getSlicesLocal();
+
+                setTimeout(() => {
+                    const loadingScreen = $('.wof-loading-screen-container');
+                    const loadingStyle = $('.wof-loading-style');
+
+                    if (loadingScreen.length > 0) {
+                        loadingScreen.remove();
+                        loadingStyle.remove();
+                    }
+                }, 1000);
 
                 if ((localStorage.getItem('config') || []) && starter) {
                     self.changeConfig();
